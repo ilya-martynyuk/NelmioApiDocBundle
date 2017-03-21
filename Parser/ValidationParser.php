@@ -43,6 +43,8 @@ class ValidationParser implements ParserInterface, PostParserInterface
         'DateTime' => DataTypes::DATETIME,
     );
 
+    protected $groups;
+
     /**
      * Requires a validation MetadataFactory.
      *
@@ -71,6 +73,10 @@ class ValidationParser implements ParserInterface, PostParserInterface
      */
     public function parse(array $input)
     {
+        if(array_key_exists('groups', $input) && is_array($input['groups']) && !empty($input['groups'])) {
+            $this->groups = $input['groups'];
+        }
+
         $className = $input['class'];
 
         $parsed = $this->doParse($className, array());
@@ -120,6 +126,16 @@ class ValidationParser implements ParserInterface, PostParserInterface
                 $constraints = $propdata->getConstraints();
 
                 foreach ($constraints as $constraint) {
+                    $groups = $constraint->groups;
+
+                    if (empty($groups)) {
+                        $groups = array("Default");
+                    }
+
+                    if (count(array_intersect($this->groups, $groups)) <= 0) {
+                        continue 3;
+                    }
+
                     $vparams = $this->parseConstraint($constraint, $vparams, $className, $visited);
                 }
             }
