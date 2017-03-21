@@ -124,6 +124,7 @@ class ValidationParser implements ParserInterface, PostParserInterface
             $pds = $classdata->getPropertyMetadata($property);
             foreach ($pds as $propdata) {
                 $constraints = $propdata->getConstraints();
+                $applicableConstraintFound = false;
 
                 foreach ($constraints as $constraint) {
                     $groups = $constraint->groups;
@@ -133,10 +134,15 @@ class ValidationParser implements ParserInterface, PostParserInterface
                     }
 
                     if (count(array_intersect($this->groups, $groups)) <= 0) {
-                        continue 3;
+                        continue;
                     }
 
                     $vparams = $this->parseConstraint($constraint, $vparams, $className, $visited);
+                    $applicableConstraintFound = true;
+                }
+
+                if (!$applicableConstraintFound) {
+                    continue 2;
                 }
             }
 
